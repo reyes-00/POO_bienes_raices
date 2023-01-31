@@ -2,7 +2,7 @@
 
 function conectarDB()
 {
-  $db = mysqli_connect('localhost', 'root', '', 'app_salon');
+  $db = new mysqli('localhost', 'root', '', 'app_salon');
 
   if (!$db) {
     echo "Error";

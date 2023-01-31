@@ -1,11 +1,14 @@
-<?php 
-  
-  if(!isset($_SESSION)){
-    session_start();
-  }
-  $auth = $_SESSION['login'] ?? null;
-  
+<?php
+
+if(!isset($_SESSION)){
+  session_start();
+} 
+$auth = $_SESSION['login'] ?? null;
+
+ 
+
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,14 +32,18 @@
         <div class="derecha"> 
           <img class="dark-mode" src="<?php echo BASE_URL?>build/img/dark-mode.svg" alt="dark-mode">
           <nav class="navegacion">
-            <a href="<?php echo BASE_URL?>nosotros.php">Nosotrsos</a>
-            <a href="<?php echo BASE_URL?>admin/index.php">Admin</a>
+            <a href="<?php echo BASE_URL?>nosotros.php">Nosotros</a>
+            <?php if ($auth):?>
+              <a href="<?php echo BASE_URL?>admin/index.php">Admin</a>
+            <?php else: ?>
+              <a href="<?php echo BASE_URL?>login.php">Admin</a>
+            <?php endif; ?>
             <a href="<?php echo BASE_URL?>contacto.php">Contacto</a>
             <a href="<?php echo BASE_URL?>anuncios.php">Anuncios</a>
             <a href="<?php echo BASE_URL?>blog.php">Blog</a>
-            <?php if($auth) : ?>
+            <?php if ($auth):?>
               <a href="<?php echo BASE_URL?>cerrar.php">Cerrar sesion</a>
-            <?php endif;?>
+            <?php endif; ?>
           </nav>
         </div>
 

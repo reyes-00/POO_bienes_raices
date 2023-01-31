@@ -1,112 +1,58 @@
 <?php 
-  require '../../includes/config/database.php';
-  $db =  conectarDB(); 
+  use Intervention\Image\ImageManagerStatic as Image;
+  require '../../includes/app.php';
+  use App\Propiedad;
+  use App\Vendedor;
 
-  require_once "../../includes/funciones.php";
-  incluirTemplate("header");
-
-  $auth = estaAutenticado();
-  // debuguear($auth);
-  if(!$auth){
-    header('Location:'.BASE_URL);
-  }
-
-  $query = "SELECT * FROM vendedores ORDER BY nombre ASC";
-  $vendedores = mysqli_query($db, $query);
-
-
-  $titulo = '';
-  $precio = '';
-  $descripcion = '';
-  $habitaciones = '';
-  $wc = '';
-  $estacionamiento = '';
-  $vendedorId = '';
-  $creado = '';
-  $errores = [];
+  estaAutenticado();
   
-  // COnfiguracion de fecha actual
-  date_default_timezone_set('UTC');
-  date_default_timezone_set("America/Mexico_City"); 
-  
+  $propiedad = new  Propiedad();
+  $vendedores=Vendedor::all();
 
+  $errores = Propiedad::getErrores();  
+ 
+  
   if($_SERVER['REQUEST_METHOD'] === 'POST'){
+
+    // debuguear($propiedad);
+    // Crea una nueva instancia
+    $propiedad = new Propiedad($_POST);
+
+    // Nombre image
+    $nombreImagen = md5( uniqid(rand(),true) ) . ".jpg";
+
+    //Pasamos el nombre al objeto Propiedad 
+    if($_FILES['imagen']['tmp_name']){
+      $image = Image::make($_FILES['imagen']['tmp_name'])->fit(800,600);
+      $propiedad->setImagen($nombreImagen);
+      
+    }
     
-    $imagen = $_FILES['imagen'];
-
-    $titulo = mysqli_real_escape_string($db, $_POST['titulo']);
-    $precio = mysqli_real_escape_string($db, $_POST['precio']);
-    $descripcion = mysqli_real_escape_string($db, $_POST['descripcion']);
-    $habitaciones = mysqli_real_escape_string($db, $_POST['habitaciones']);
-    $wc = mysqli_real_escape_string($db, $_POST['wc']);
-    $estacionamiento = mysqli_real_escape_string($db, $_POST['estacionamiento']);
-    $vendedorId = mysqli_real_escape_string($db, $_POST['vendedor']);
-    $creado = date('Y/m/d');
-
-    $medida = 1000 * 100;
-   
-    if($imagen['size'] > $medida){
-      $errores[]="La imagen es muy grande";
-    }
-
-    if(!$titulo){
-      $errores[] = "El titulo es requerido.";
-    }
-    if(!$precio){
-      $errores[] = "El precio es requerido.";
-    }
-
-    if(!$imagen['name'] || $imagen['error']){
-      $errores[]="La imagen es requerida";
-    }
-    if(strlen($descripcion) < 20 ){
-      $errores[] = "La descripcion debe ser mayor a 20 caracteres.";
-    }
-    if(!$descripcion){
-      $errores[] = "La descripcion es requerida.";
-    }
-    if(!$habitaciones){
-      $errores[] = "La habitacion es requerido.";
-    }
-    if(!$wc){
-      $errores[] = "El wc es requerido.";
-    }
-    if(!$estacionamiento){
-      $errores[] = "El estacionamiento es requerido.";
-    }
-    if(!$vendedorId){
-      $errores[] = "El vendedor es requerido.";
-    }
-
+    // Validar
+    $errores = $propiedad->validar();
+    
     if(empty($errores)){
-
-      // Creamos la carpeta
-
-      $carpetaImagenes = '../../imagenes/';
-
-      if(!is_dir($carpetaImagenes)){
-        mkdir($carpetaImagenes);
+      
+      // Crear carpetaImagenes
+      if(!is_dir(CARPETA_IMAGENES)){
+        mkdir(CARPETA_IMAGENES);
       }
+      // Guarda la imagen
+      $image->save(CARPETA_IMAGENES . $nombreImagen); 
       
-      $nombreImagen = md5( uniqid(rand(),true) ) . ".jpg";
+      // GUarda en la base de datos
+      $resultado = $propiedad->guardar();
       
-      move_uploaded_file($imagen['tmp_name'], $carpetaImagenes .  $nombreImagen);
-      
-
-      $query = "INSERT INTO propiedades(titulo,precio,imagen,descripcion,habitaciones,wc,estacionamiento,vendedorId,creado) 
-      VALUES ('$titulo','$precio','$nombreImagen','$descripcion','$habitaciones','$wc','$estacionamiento','$vendedorId','$creado');";
-     
-      $resultado = mysqli_query($db,$query);
-  
+      // Mensaje exito
       if($resultado){
         header('Location:' .BASE_URL . 'admin/index.php?resultado=1');
       }
     }  
- 
+    
   }
-
-
-?>
+  
+  incluirTemplate("header");
+  ?>
   <main class="contenedor seccion">
     <a href="<?php echo BASE_URL ?>admin/index.php" class="boton boton-verde">Volver</a>
 
@@ -117,51 +63,13 @@
       <?php endforeach; ?>
     
     <form action="" class="formulario" method="POST" enctype="multipart/form-data">
-      <fieldset>
-        <legend>Información</legend>
-        
-        <label for="titulo">Titulo</label>
-        <input type="text" name="titulo" id="titulo" placeholder="Titulo" value="<?php echo $titulo; ?>">
-        
-        <label for="precio">Precio</label>
-        <input type="number" name="precio" id="precio" placeholder="Precio" value="<?php echo $precio; ?>">
-        
-        <label for="imagen">Imagen</label>               
-        <input type="file" name="imagen" id="imagen" accept="image/jpeg, image/png">
-      
-        <label for="descripcion">Descripcion</label>
-        <textarea  name="descripcion" id="descripcion" placeholder="Descripcion"><?php echo $descripcion; ?></textarea>
-      </fieldset>
-
-      <fieldset>
-        <legend>Informacion habtaciones</legend>
-
-        <label for="habitaciones">Habitaciones</label>
-        <input type="number" name="habitaciones" id="habitaciones" placeholder="Habitaciones" value="<?php echo $habitaciones; ?>">
-       
-        <label for="wc">WC</label>
-        <input type="number" name="wc" id="wc" placeholder="WC" value="<?php echo $wc; ?>">
- 
-        <label for="estacionamiento">Estacionamiento</label>
-        <input type="number" name="estacionamiento" id="estacionamiento" placeholder="Estacionamiento" value="<?php echo $estacionamiento; ?>">
-
-      </fieldset>
-
-      <fieldset>
-        <legend>Vendedor</legend>
-        
-        <select name="vendedor">
-          <option value="">--Selecciona--</option>
-          <?php foreach ($vendedores as $vendedor): ?>
-          <option <?php echo $vendedorId === $vendedor['id'] ? 'selected' : '' ?> value="<?php echo $vendedor['id'];?>"><?php echo $vendedor['nombre'] ." ". $vendedor['apellidos'];?></option>
-          <?php endforeach;?>
-        </select>
-      </fieldset>
-
+      <?php include '../../includes/templates/formulario_propiedades.php' ?>
       <input type="submit" value="Crear" class="boton-verde">
     </form>
   </main>
  
 <?php
+
+
      incluirTemplate("footer", $inicio = false, $crear = true);
 ?>

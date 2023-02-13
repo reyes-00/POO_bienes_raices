@@ -66,8 +66,8 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST') {
     <input type="password" name="password" id="password" placeholder="Tu password">
 
     <input type="submit" value="Inicia Sesión" class="boton-verde">
+  </fieldset>
 </form>
-</fieldset>
 
 <?php
 incluirTemplate("footer", $inicio = false, $crear = true);

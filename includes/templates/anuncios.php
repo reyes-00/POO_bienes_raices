@@ -1,10 +1,10 @@
 <?php 
 //agregamos esa ruta porque este archivo esta siendo llamdado en index y index manda a llamar todo es por eso que se agrega asi la ruta
 
-use App\Propiedad;
 
   if($_SERVER["SCRIPT_FILENAME"] == 'C:/xampp/htdocs/PHP/POO/bienesraices_inicio_POO/index.php'){
-    $propiedades = Propiedad::get($limite); 
+    $propiedades = Propiedad::get($limite
+  ); 
   }else{
     $propiedades = Propiedad::all();
 

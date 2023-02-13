@@ -2,8 +2,8 @@
 
 define('TEMPLATE_URL',__DIR__ .'/templates');
 define('FUNCIONES_URL',__DIR__.'/funciones.php'); 
-define('BASE_URL','http://localhost/PHP/POO/bienesraices_inicio_POO/'); 
-define('CARPETA_IMAGENES', __DIR__ . '/../imagenes/');
+define('BASE_URL','http://localhost:3000/');  
+define('CARPETA_IMAGENES', $_SERVER['DOCUMENT_ROOT'].'/imagenes/');
 
 function incluirTemplate($nombre, $inicio = false, $crear = false) {
   include TEMPLATE_URL."/$nombre.php";
